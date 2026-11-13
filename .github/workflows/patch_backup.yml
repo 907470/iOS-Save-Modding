@@ -1,0 +1,47 @@
+name: Patch iOS Backup Manifest
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_file_query:
+        description: 'Relative path query of the file to replace (e.g., config.json)'
+        required: true
+        default: 'Documents/config.json'
+
+jobs:
+  patch-backup:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Prepare Backup Environment
+        run: |
+          # If your backup archive is stored externally (e.g., encrypted private S3 or release asset), 
+          # download and extract it here into a folder named 'backup_folder/'
+          mkdir -p backup_folder/Documents
+          
+          # Dummy example creation for demonstration purposes:
+          # In reality, you would pull your actual extracted iTunes backup folder structure here.
+          echo "Sample modified content" > replacement_doc.txt
+        
+      - name: Run Manifest Patcher Script
+        run: |
+          # Pass the backup directory path, file query, and replacement source file
+          python3 update_backup.py "backup_folder" "${{ github.event.inputs.target_file_query }}" "replacement_doc.txt"
+
+      - name: Package Modified Backup
+        run: |
+          zip -r modified_ios_backup.zip backup_folder
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: patched-ios-backup
+          path: modified_ios_backup.zip
