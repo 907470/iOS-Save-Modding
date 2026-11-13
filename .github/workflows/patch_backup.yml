@@ -2,6 +2,11 @@ name: Patch All Documents in iOS Backup
 
 on:
   workflow_dispatch:
+    inputs:
+      zip_filename:
+        description: 'Name of the uploaded backup zip file'
+        required: true
+        default: 'my_backup.zip'
 
 jobs:
   patch-all-docs:
@@ -18,8 +23,9 @@ jobs:
 
       - name: Unzip Backup Archive
         run: |
-          # Replace 'my_backup.zip' with the exact filename of your uploaded backup zip
-          unzip my_backup.zip -d extracted_backup/
+          # Uses the dynamic input provided when triggering the workflow
+          echo "Unzipping ${{ github.event.inputs.zip_filename }}..."
+          unzip "${{ github.event.inputs.zip_filename }}" -d extracted_backup/
 
       - name: Run Bulk Manifest Patcher Script
         run: |
